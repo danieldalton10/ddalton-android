@@ -1,6 +1,8 @@
 package com.example.goalball;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Game {
     private HashMap<String, Team> teams = new HashMap<String, Team>();
@@ -49,4 +51,13 @@ public class Game {
         this.teams = teams;
     }
 
+    public List<Player> getAllPlayers() {
+        List<Player> players = new ArrayList<Player>();
+        for (String team : teams.keySet()) {
+            for (String number : teams.get(team).getPlayers().keySet()) {
+                players.add(teams.get(team).getPlayers().get(number));
+            }
+        }
+        return players;
+    }
 }

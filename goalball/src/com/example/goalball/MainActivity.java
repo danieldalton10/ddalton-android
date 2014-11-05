@@ -1,5 +1,9 @@
 package com.example.goalball;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,27 +20,56 @@ public class MainActivity extends Activity {
     private final static String HOME = "HOME";
     private final static String AWAY = "AWAY";
     private final static String GAME_STRING = "GAME";
-    
-    private Game game = new Game ();
-    private Button btnTeam1Player1;
+
+    private Game game = new Game();
+    private HashMap<String, List<String>> buttonToPlayer = new HashMap<String, List<String>>();
+
+    private Button btnHome1;
+    private Button btnHome2;
+    private Button btnHome3;
+    private Button btnAway1;
+    private Button btnAway2;
+    private Button btnAway3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btnTeam1Player1 = (Button) findViewById(R.id.btn_team1_1);
-        game.getTeams ().put(HOME, new Team (HOME));
-        game.getTeams ().put(AWAY, new Team (AWAY));
+        btnHome1 = (Button) findViewById(R.id.btn_home1);
+        btnHome2 = (Button) findViewById(R.id.btn_home2);
+        btnHome3 = (Button) findViewById(R.id.btn_home3);
+        btnAway1 = (Button) findViewById(R.id.btn_away1);
+        btnAway2 = (Button) findViewById(R.id.btn_away2);
+        btnAway3 = (Button) findViewById(R.id.btn_away3);
+        mapButtonsToPlayers();
+        game.getTeams().put(HOME, new Team(HOME));
+        game.getTeams().put(AWAY, new Team(AWAY));
         for (int i = 1; i <= 9; i++) {
             Player player = new Player(i, HOME);
-            game.getTeams().get(HOME).getPlayers ().put (String.valueOf(player.getNumber ()), player);
+            game.getTeams().get(HOME).getPlayers().put(String.valueOf(player.getNumber()), player);
             player = new Player(i, AWAY);
-            game.getTeams().get(AWAY).getPlayers ().put (String.valueOf(player.getNumber ()), player);
+            game.getTeams().get(AWAY).getPlayers().put(String.valueOf(player.getNumber()), player);
         }
         if (savedInstanceState != null) {
             Log.d("GOALBALL", "From saved instance state");
             loadFromBundle(savedInstanceState);
-        } 
+        }
+    }
+
+    private void mapButtonsToPlayers() {
+        buttonToPlayer.put(String.valueOf(btnHome1.getId()), playerDescription(HOME, "1"));
+        buttonToPlayer.put(String.valueOf(btnHome2.getId()), playerDescription(HOME, "2"));
+        buttonToPlayer.put(String.valueOf(btnHome3.getId()), playerDescription(HOME, "3"));
+        buttonToPlayer.put(String.valueOf(btnAway1.getId()), playerDescription(AWAY, "1"));
+        buttonToPlayer.put(String.valueOf(btnAway2.getId()), playerDescription(AWAY, "2"));
+        buttonToPlayer.put(String.valueOf(btnAway3.getId()), playerDescription(AWAY, "3"));
+    }
+
+    private List<String> playerDescription(String team, String number) {
+        List<String> list = new ArrayList<String>();
+        list.add(team);
+        list.add(number);
+        return list;
     }
 
     @Override
@@ -51,7 +84,8 @@ public class MainActivity extends Activity {
                 if (json != null) {
                     Gson gson = new Gson();
                     Player player = gson.fromJson(json, Player.class);
-                    game.getTeams ().get(player.getTeam ()).getPlayers().put(String.valueOf(player.getNumber()), player);
+                    game.getTeams().get(player.getTeam()).getPlayers()
+                            .put(String.valueOf(player.getNumber()), player);
                 }
             }
         }
@@ -59,66 +93,45 @@ public class MainActivity extends Activity {
     }
 
     private void loadFromBundle(Bundle bundle) {
-        /*String playersString = bundle.getString("players");
-        if (playersString != null) {
-            Gson gson = new Gson();
-            for (String playerString : playersString.split(",")) {
-                Log.d("GOALBALL", "Loading player " + playerString + " on saved state");
-                String json = bundle.getString(playerString);
-                // Player player = (Player) bundle.getParcelable(playerString);
-                players.put(playerString, gson.fromJson(json, Player.class));
-            }
-        }*/
         String json = bundle.getString(GAME_STRING);
-        Gson gson = new Gson ();
+        Gson gson = new Gson();
         game = gson.fromJson(json, Game.class);
     }
 
-    /*private Bundle saveToBundle(Bundle bundle) {
-        StringBuilder sb = new StringBuilder();
-        Gson gson = new Gson();
-        for (String playerDescription : players.keySet()) {
-            String json = gson.toJson(players.get(playerDescription));
-            bundle.putString(playerDescription, json);
-            sb.append(playerDescription).append(",");
-        }
-        if (sb.length() > 0) {
-            String playersString = sb.substring(0, sb.length() - 1);
-            Log.d("GOALBALL", "Players string = " + playersString);
-            bundle.putString("players", playersString);
-        }
-        
-        return bundle;
-    }*/
-
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        //savedInstanceState = saveToBundle(savedInstanceState);
-        Gson gson = new Gson ();
-        savedInstanceState.putString(GAME_STRING, gson.toJson (game));
+        // savedInstanceState = saveToBundle(savedInstanceState);
+        Gson gson = new Gson();
+        savedInstanceState.putString(GAME_STRING, gson.toJson(game));
         super.onSaveInstanceState(savedInstanceState);
     }
 
     public void onPlayer(View view) {
         Intent intent = new Intent(this, PlayerActivity.class);
-        //Bundle bundle = saveToBundle(new Bundle());
-        Bundle bundle = new Bundle ();
-        Gson gson = new Gson ();
-        bundle.putString(GAME_STRING, gson.toJson (game));
-        String team;
-        String number;
-        if (view == btnTeam1Player1) {
-            team = HOME;
-            number = "1";
-        } else {
-            team = AWAY;
-            number = "1";
-        }
-        String json = gson.toJson(game.getTeams ().get(team).getPlayers ().get (number));
+        Bundle bundle = new Bundle();
+        Gson gson = new Gson();
+        bundle.putString(GAME_STRING, gson.toJson(game));
+        List<String> player = buttonToPlayer.get(String.valueOf(view.getId()));
+        String json = gson.toJson(game.getTeams().get(player.get(0)).getPlayers().get(player.get(1)));
         Log.d("GOALBALL", "Sending the following json to the player activity: " + json);
         bundle.putString("updatePlayer", json);
         intent.putExtras(bundle);
         startActivityForResult(intent, REQUEST_PLAYER);
+    }
+
+    public void onSave(View view) {
+        CsvAssembler csvAssembler = new CsvAssembler();
+        String header = "Team,Number,Throws,Goals";
+        List<HashMap<String,String>> contents = new ArrayList<HashMap<String,String>> ();
+        for (Player player : game.getAllPlayers()) {
+            HashMap<String, String> row = new HashMap<String, String>();
+            row.put("team", player.getTeam());
+            row.put("Number", String.valueOf(player.getNumber()));
+            row.put("Throws", String.valueOf(player.getTotalThrows()));
+            row.put("Goals", String.valueOf(player.getGoals().size()));
+            contents.add(row);
+        }
+        Log.d("GOALBALL", "CSV output is:\n"+csvAssembler.produceCSV(header, contents));
     }
 
     @Override

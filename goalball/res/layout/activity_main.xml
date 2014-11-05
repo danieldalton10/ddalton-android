@@ -12,19 +12,67 @@
         android:orientation="horizontal">
         
     <Button
-		android:id="@+id/btn_team1_1"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:layout_marginTop = "10dp"
-        android:text="Team 1 Player 1"
+    android:id="@+id/btn_home1"
+android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home team Player 1"
 		android:onClick="onPlayer" />
     
     <Button
-		android:id="@+id/btn_team2_1"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:text="Team 2 Player 1"
-        android:layout_marginTop = "10dp"
+		android:id="@+id/btn_away1"
+		android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Away team Player 1"
 		android:onClick="onPlayer" />
     </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:gravity = "center"
+        android:orientation="horizontal">
+        
+    <Button
+    android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:id="@+id/btn_home2"
+        android:text="Home team Player 2"
+		android:onClick="onPlayer" />
+    
+    <Button
+    android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:id="@+id/btn_away2"
+        android:text="Away team Player 2"
+		android:onClick="onPlayer" />
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:gravity = "center"
+        android:orientation="horizontal">
+        
+    <Button
+    android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:id="@+id/btn_home3"
+        android:text="Home team Player 3"
+		android:onClick="onPlayer" />
+    
+    <Button
+    android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+		android:id="@+id/btn_away3"
+        android:text="Away team Player 3"
+		android:onClick="onPlayer" />
+    </LinearLayout>
+    
+    <Button
+    android:id="@+id/btn_save"
+android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+		android:onClick="onSave" />
+    
 </LinearLayout>
