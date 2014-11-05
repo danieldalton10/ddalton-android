@@ -5,14 +5,22 @@ import java.util.List;
 
 public class Player {
     private String name;
-    private int number;
     private String team;
+    private int number;
     private int totalThrows;
     private List<Goal> goals = new ArrayList<Goal>();
 
-    public Player(String team, int number) {
-        this.team = team;
+    public Player(int number, String team) {
         this.number = number;
+        this.team = team;
+    }
+
+    public String getTeam() {
+        return team;
+    }
+
+    public void setTeam(String team) {
+        this.team = team;
     }
 
     public List<Goal> getGoals() {
@@ -39,24 +47,12 @@ public class Player {
         this.number = number;
     }
 
-    public String getTeam() {
-        return team;
-    }
-
-    public void setTeam(String team) {
-        this.team = team;
-    }
-
     public int getTotalThrows() {
         return totalThrows;
     }
 
     public void setTotalThrows(int totalThrows) {
         this.totalThrows = totalThrows;
-    }
-
-    public String getPlayerDescription() {
-        return "Team: " + team + " number: " + number;
     }
 
     public static class Goal {
@@ -76,5 +72,9 @@ public class Player {
         public void setTime(long time) {
             this.time = time;
         }
+    }
+
+    public String getPlayerDescription() {
+        return "Team: " + team + " number: " + number;
     }
 }

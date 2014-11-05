@@ -68,7 +68,6 @@ public class PlayerActivity extends Activity {
     }
 
     private void backToMain() {
-        //Intent intent = new Intent(this, MainActivity.class);
         Intent intent = new Intent ();
         Gson gson = new Gson();
         String json = gson.toJson(updatePlayer);
