@@ -67,6 +67,32 @@ public class PlayerActivity extends Activity {
         backToMain();
     }
 
+    public void onBlock(View view) {
+        if (updatePlayer != null) {
+            updatePlayer.setSaves(updatePlayer.getSaves() + 1);
+            Log.d("GOALBALL", "Saves for " + updatePlayer.getPlayerDescription() + " is: "
+                    + updatePlayer.getSaves());
+            String message = updatePlayer.getPlayerDescription() + " has had "
+                    + updatePlayer.getSaves() + " saves";
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.d("GOALBALL", "Couldn't update the player is null");
+        }
+        backToMain();
+    }
+    
+    public void onError(View view) {
+        if (updatePlayer != null) {
+            updatePlayer.setErrors(updatePlayer.getErrors() + 1);
+            String message = updatePlayer.getPlayerDescription() + " has had "
+                    + updatePlayer.getErrors() + " errors";
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.d("GOALBALL", "Couldn't update the player is null");
+        }
+        backToMain();
+    }
+    
     private void backToMain() {
         Intent intent = new Intent ();
         Gson gson = new Gson();

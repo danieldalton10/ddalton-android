@@ -1,17 +1,25 @@
 package com.example.goalball;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -20,6 +28,7 @@ public class MainActivity extends Activity {
     private final static String HOME = "HOME";
     private final static String AWAY = "AWAY";
     private final static String GAME_STRING = "GAME";
+    private final static String GOALBALL_DIR = "Goalball";
 
     private Game game = new Game();
     private HashMap<String, List<String>> buttonToPlayer = new HashMap<String, List<String>>();
@@ -44,7 +53,7 @@ public class MainActivity extends Activity {
         mapButtonsToPlayers();
         game.getTeams().put(HOME, new Team(HOME));
         game.getTeams().put(AWAY, new Team(AWAY));
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= 3; i++) {
             Player player = new Player(i, HOME);
             game.getTeams().get(HOME).getPlayers().put(String.valueOf(player.getNumber()), player);
             player = new Player(i, AWAY);
@@ -53,6 +62,9 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             Log.d("GOALBALL", "From saved instance state");
             loadFromBundle(savedInstanceState);
+        } else {
+            Log.d("GOALBALL", "Setting the start time");
+            game.setStartTime(System.currentTimeMillis());
         }
     }
 
@@ -100,7 +112,6 @@ public class MainActivity extends Activity {
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        // savedInstanceState = saveToBundle(savedInstanceState);
         Gson gson = new Gson();
         savedInstanceState.putString(GAME_STRING, gson.toJson(game));
         super.onSaveInstanceState(savedInstanceState);
@@ -119,19 +130,66 @@ public class MainActivity extends Activity {
         startActivityForResult(intent, REQUEST_PLAYER);
     }
 
-    public void onSave(View view) {
+    private File save() throws IOException {
         CsvAssembler csvAssembler = new CsvAssembler();
-        String header = "Team,Number,Throws,Goals";
-        List<HashMap<String,String>> contents = new ArrayList<HashMap<String,String>> ();
+        String header = "Team,Number,Saves,Errors,Throws,Goals,Throws Per Goal,Score Time,Goals VS Errors";
+        List<HashMap<String, String>> contents = new ArrayList<HashMap<String, String>>();
         for (Player player : game.getAllPlayers()) {
             HashMap<String, String> row = new HashMap<String, String>();
-            row.put("team", player.getTeam());
+            row.put("Team", player.getTeam());
             row.put("Number", String.valueOf(player.getNumber()));
             row.put("Throws", String.valueOf(player.getTotalThrows()));
             row.put("Goals", String.valueOf(player.getGoals().size()));
+            row.put("Score Time", player.getScoreTimes(game.getStartTime()));
+            row.put("Throws Per Goal", String.valueOf(player.getThrowsPerGoal()));
+            row.put("Saves", String.valueOf(player.getSaves()));
+            row.put("Errors", String.valueOf(player.getErrors()));
+            row.put("Goals VS Errors", String.valueOf(player.getGoalsVSErrors()));
             contents.add(row);
         }
-        Log.d("GOALBALL", "CSV output is:\n"+csvAssembler.produceCSV(header, contents));
+        String filename = "goalball" + System.currentTimeMillis() + ".csv";
+        File path = Environment.getExternalStoragePublicDirectory(GOALBALL_DIR);
+        File file = new File(path, filename);
+        path.mkdirs();
+        FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());
+        BufferedWriter writer = new BufferedWriter(fileWriter);
+        csvAssembler.produceCSV(writer, header, contents);
+        writer.close();
+        updateInFS(file);
+        return file;
+    }
+
+    public void onSave (View view) {
+        String text = "Saved stats";
+        try {
+            save ();
+        } catch (IOException e) {
+            Log.d("GOALBALL", "IOException: "+e.toString ());
+            text = "Failed to save stats";
+        }
+        Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+    }
+    
+    public void onShare(View view) {
+        try {
+            String path = save ().toString ();
+            Intent share = new Intent(Intent.ACTION_SEND);
+            share.setType("text/csv");
+            share.putExtra(Intent.EXTRA_STREAM,Uri.parse("file:///"+path));
+            startActivity(Intent.createChooser(share, "Share Stats"));
+        } catch (IOException e) {
+            String text = "Something went wrong...";
+            Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            Log.d("GOALBALL", "IOException: "+e.toString ());
+        }
+    }
+    
+    private void updateInFS(File file) {
+        MediaScannerConnection.scanFile(this, new String[] { file.toString() }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                    }
+                });
     }
 
     @Override

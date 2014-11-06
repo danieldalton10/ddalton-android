@@ -54,8 +54,8 @@ public class Game {
     public List<Player> getAllPlayers() {
         List<Player> players = new ArrayList<Player>();
         for (String team : teams.keySet()) {
-            for (String number : teams.get(team).getPlayers().keySet()) {
-                players.add(teams.get(team).getPlayers().get(number));
+            for (int number = 1; number <= teams.get(team).getPlayers ().size (); number ++) {
+                players.add(teams.get(team).getPlayers().get(String.valueOf(number)));
             }
         }
         return players;
