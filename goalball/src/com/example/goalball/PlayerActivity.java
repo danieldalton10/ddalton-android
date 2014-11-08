@@ -132,7 +132,7 @@ public class PlayerActivity extends Activity {
             game.getTeams().get(lastThrower.getTeam()).getPlayers().put(lastThrower.getNumber(), lastThrower);
         }
         game.getTeams().get(updatePlayer.getTeam()).getPlayers().put(updatePlayer.getNumber(), updatePlayer);
-        Intent intent = new Intent();
+        Intent intent = new Intent();   
         Gson gson = new Gson();
         // String json = gson.toJson(updatePlayer);
         // bundle.putString("updatePlayer", json);
