@@ -8,13 +8,14 @@ import android.util.Log;
 public class Player {
     private String name;
     private String team;
-    private int number;
+    private String number;
     private int totalThrows;
     private List<Goal> goals = new ArrayList<Goal>();
     private int saves;
     private int errors;
+    private boolean allowToScore = true;
 
-    public Player(int number, String team) {
+    public Player(String number, String team) {
         this.number = number;
         this.team = team;
     }
@@ -35,6 +36,21 @@ public class Player {
         this.goals = goals;
     }
 
+    public void increaseGoals(int increase, Player team) {
+        if (increase > 0) {
+            Goal goal = new Goal(System.currentTimeMillis());
+            goals.add(goal);
+            if (team != null) {
+                team.increaseGoals(increase, null);
+            }
+        } else { // remove a goal
+            Goal goal = goals.remove(goals.size() - 1);
+            if (team != null) {
+                team.getGoals().remove(goal);
+            }
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -43,11 +59,11 @@ public class Player {
         this.name = name;
     }
 
-    public int getNumber() {
+    public String getNumber() {
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(String number) {
         this.number = number;
     }
 
@@ -55,7 +71,11 @@ public class Player {
         return totalThrows;
     }
 
-    public void setTotalThrows(int totalThrows) {
+    public void setTotalThrows(int totalThrows, Player team) {
+        if (team != null) {
+            int difference = totalThrows - this.totalThrows;
+            team.setTotalThrows(team.getTotalThrows() + difference, null);
+        }
         this.totalThrows = totalThrows;
     }
 
@@ -63,7 +83,11 @@ public class Player {
         return saves;
     }
 
-    public void setSaves(int saves) {
+    public void setSaves(int saves, Player team) {
+        if (team != null) {
+            int difference = saves - this.saves;
+            team.setSaves(team.getSaves() + difference, null);
+        }
         this.saves = saves;
     }
 
@@ -71,8 +95,28 @@ public class Player {
         return errors;
     }
 
-    public void setErrors(int errors) {
+    public void setErrors(int errors, Player team) {
+        if (team != null) {
+            int difference = errors - this.errors;
+            team.setErrors(team.getErrors() + difference, null);
+        }
         this.errors = errors;
+    }
+
+    public void smartSetErrors(int errors, Player team, Player lastThrower, Player scoringTeam) {
+        setErrors(errors, team);
+        if (lastThrower != null) {
+            lastThrower.increaseGoals(1, scoringTeam);
+            lastThrower.setAllowToScore(false);
+        } // else should really be illegal for now allow it
+    }
+
+    public boolean isAllowToScore() {
+        return allowToScore;
+    }
+
+    public void setAllowToScore(boolean allowToScore) {
+        this.allowToScore = allowToScore;
     }
 
     public static class Goal {
@@ -132,8 +176,8 @@ public class Player {
         Log.d("GOALBALL", "Seconds = " + seconds);
         return minutesPrefix + minutes + ":" + secondsPrefix + seconds;
     }
-    
-    public int getGoalsVSErrors () {
-        return goals.size () - errors;
+
+    public int getGoalsVSErrors() {
+        return goals.size() - errors;
     }
 }

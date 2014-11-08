@@ -12,7 +12,10 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 public class PlayerActivity extends Activity {
+    private final static String GAME_STRING = "GAME";
     private Player updatePlayer;
+    private Player lastThrower = null;
+    private Game game;
     private Bundle bundle;
 
     @Override
@@ -22,16 +25,26 @@ public class PlayerActivity extends Activity {
 
         Intent intent = getIntent();
         bundle = getIntent().getExtras();
-        String json = intent.getExtras().getString("updatePlayer");
+        String jsonPlayer = intent.getExtras().getString("updatePlayer");
+        String jsonGame = intent.getExtras().getString(GAME_STRING);
+        String jsonLastThrower = intent.getExtras().getString("lastThrower");
         if (savedInstanceState != null) {
-            json = savedInstanceState.getString("updatePlayer");
+            jsonPlayer = savedInstanceState.getString("updatePlayer");
+            jsonGame = savedInstanceState.getString(GAME_STRING);
+            jsonLastThrower = savedInstanceState.getString("lastThrower");
             bundle = savedInstanceState.getBundle("bundle");
         }
 
-        if (json != null) {
-            Gson gson = new Gson();
-            updatePlayer = gson.fromJson(json, Player.class);
+        Gson gson = new Gson();
+        if (jsonPlayer != null) {
+            updatePlayer = gson.fromJson(jsonPlayer, Player.class);
             Log.d("GOALBALL", "Loaded the player");
+        }
+        if (jsonGame != null) {
+            game = gson.fromJson(jsonGame, Game.class);
+        }
+        if (jsonLastThrower != null) {
+            lastThrower = gson.fromJson(jsonLastThrower, Player.class);
         }
     }
 
@@ -39,13 +52,19 @@ public class PlayerActivity extends Activity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         Gson gson = new Gson();
         savedInstanceState.putString("updatePlayer", gson.toJson(updatePlayer));
+        if (lastThrower != null) {
+            savedInstanceState.putString("lastThrower", gson.toJson(lastThrower));
+        }
+        savedInstanceState.putString(GAME_STRING, gson.toJson(game));
         savedInstanceState.putBundle("bundle", bundle);
         super.onSaveInstanceState(savedInstanceState);
     }
 
     public void onThrow(View view) {
+        lastThrower = updatePlayer;
         if (updatePlayer != null) {
-            updatePlayer.setTotalThrows(updatePlayer.getTotalThrows() + 1);
+            updatePlayer.setTotalThrows(updatePlayer.getTotalThrows() + 1,
+                    game.getTeams().get(updatePlayer.getTeam()).getTotalPlayer());
             Log.d("GOALBALL", "Total throws for " + updatePlayer.getPlayerDescription() + " is: "
                     + updatePlayer.getTotalThrows());
             String message = updatePlayer.getPlayerDescription() + " has had "
@@ -58,50 +77,73 @@ public class PlayerActivity extends Activity {
     }
 
     public void onGoal(View view) {
-        if (updatePlayer != null) {
-            updatePlayer.getGoals().add(new Player.Goal(System.currentTimeMillis()));
-            String message = updatePlayer.getPlayerDescription() + " has scored "
-                    + updatePlayer.getGoals().size() + " goals";
-            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        String message = "An error occurred";
+        Log.d("GOALBALL", "is allowed to score: "+updatePlayer.isAllowToScore());
+        if (!updatePlayer.isAllowToScore()) {
+            updatePlayer.setAllowToScore(true);
+            Log.d("GOALBALL", "Setting is allowed to score: "+updatePlayer.isAllowToScore());
+            message = "Goal automatically added - tap back here again if you really meant to do this.";
+        } else {
+            if (updatePlayer != null) {
+                updatePlayer.increaseGoals(1, game.getTeams().get(updatePlayer.getTeam()).getTotalPlayer());
+                message = updatePlayer.getPlayerDescription() + " has scored "
+                        + updatePlayer.getGoals().size() + " goals";
+            }
         }
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         backToMain();
     }
 
     public void onBlock(View view) {
         if (updatePlayer != null) {
-            updatePlayer.setSaves(updatePlayer.getSaves() + 1);
-            Log.d("GOALBALL", "Saves for " + updatePlayer.getPlayerDescription() + " is: "
-                    + updatePlayer.getSaves());
-            String message = updatePlayer.getPlayerDescription() + " has had "
-                    + updatePlayer.getSaves() + " saves";
+            updatePlayer.setSaves(updatePlayer.getSaves() + 1, game.getTeams().get(updatePlayer.getTeam())
+                    .getTotalPlayer());
+            Log.d("GOALBALL",
+                    "Saves for " + updatePlayer.getPlayerDescription() + " is: " + updatePlayer.getSaves());
+            String message = updatePlayer.getPlayerDescription() + " has had " + updatePlayer.getSaves()
+                    + " saves";
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         } else {
             Log.d("GOALBALL", "Couldn't update the player is null");
         }
         backToMain();
     }
-    
+
     public void onError(View view) {
         if (updatePlayer != null) {
-            updatePlayer.setErrors(updatePlayer.getErrors() + 1);
-            String message = updatePlayer.getPlayerDescription() + " has had "
-                    + updatePlayer.getErrors() + " errors";
+            Player throwerTeam = null;
+            if (lastThrower != null) {
+                throwerTeam = game.getTeams().get(lastThrower.getTeam()).getTotalPlayer();
+            }
+            updatePlayer.smartSetErrors(updatePlayer.getErrors() + 1,
+                    game.getTeams().get(updatePlayer.getTeam()).getTotalPlayer(), lastThrower, throwerTeam);
+
+            String message = updatePlayer.getPlayerDescription() + " has had " + updatePlayer.getErrors()
+                    + " errors";
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         } else {
             Log.d("GOALBALL", "Couldn't update the player is null");
         }
         backToMain();
     }
-    
+
     private void backToMain() {
-        Intent intent = new Intent ();
+        if (lastThrower != null) {
+            game.getTeams().get(lastThrower.getTeam()).getPlayers().put(lastThrower.getNumber(), lastThrower);
+        }
+        game.getTeams().get(updatePlayer.getTeam()).getPlayers().put(updatePlayer.getNumber(), updatePlayer);
+        Intent intent = new Intent();
         Gson gson = new Gson();
-        String json = gson.toJson(updatePlayer);
-        bundle.putString("updatePlayer", json);
-        Log.d("GOALBALL", "Json back to main = " + json);
+        // String json = gson.toJson(updatePlayer);
+        // bundle.putString("updatePlayer", json);
+        bundle.putString(GAME_STRING, gson.toJson(game));
+        if (lastThrower != null) {
+            bundle.putString("lastThrower", gson.toJson(lastThrower));
+        }
+        // Log.d("GOALBALL", "Json back to main = " + json);
         intent.putExtras(bundle);
         setResult(RESULT_OK, intent);
-        finish ();
+        finish();
     }
 
     @Override
