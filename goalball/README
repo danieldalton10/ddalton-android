@@ -1,0 +1,43 @@
+Experimental goalball statistics application.
+This application is a proto type and demonstrates some of the main features for a goalball stat keeping app.
+
+The app will need to be made more versitile for multiple teams, and more players.
+
+Current features:
+- Two teams HOME and AWAY each with 3 players
+- For each of these players record goals, thros saves and errors 
+- Generate a csv file and save to device with the following break down:
+  Team,Player number,Saves,Errors,Goals,Throws,Throws per goal,Score times and goals vs errors
+  Records these stats for all players and sums a total for each team
+- Sharing of statistics 
+- Smarts around errors and goals eg. hitting error for team AWAY gives a goal to the last thrower on team HOME.
+
+TODO:
+- 10 second and game timers 
+- more statistics (very straight forward to add)
+- Improve UI 
+- More summary break down options currently only have game look to add player, season team weekly and other break downs
+- Personalise teams and players. Allow to make and save teams and players who are named and can be tracked for all games they play in across multiple leagues.
+- Autosaving current game state and resuming from some state (in case of crash or user error). Very easy - json dump
+- Investigate other sharing options and formats.
+- Consider using fragments in the UI
+- Implement rules such as player must throw to score a goal
+- Undo/delete function in case user hits wrong player / stat
+- Way to view stats for the game during ap use.
+
+
+BUGS
+
+Record any bugs here.
+
+USAGE:
+
+Build in the standard way undr eclipse. Only jar required is google gson library which is included.
+
+
+1. Open the app - game starts.
+2. Press on a player.
+3. Press a stat eg. throw to give that player another throw.
+4. Repeat steps 2-3 until end of game.
+5. Press "save" button to save the csv file to phone memory or "share" to share the stats.
+
