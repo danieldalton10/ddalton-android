@@ -20,8 +20,9 @@ public class CsvAssembler {
             throws IOException {
         StringBuilder sb = new StringBuilder();
         for (String field : header) {
-            String value = row.get(field);
-            if (field.length() > 0) {
+            String value = row.get(field); // try to get field with raw name
+            if (value == null && field.length() > 0) { // try stripping the
+                                                       // quotes then getting it
                 value = row.get(field.substring(1, field.length() - 1));
             }
             if (value != null && !value.equals("")) {
@@ -31,9 +32,11 @@ public class CsvAssembler {
         }
 
         String csvRow = "";
-        if (sb.length() > 0) {
+        if (sb.length() > 0) { // remove extra comma at the end
             csvRow = sb.substring(0, sb.length() - 1);
         }
+
+        // Don't add an empty row
         if (!csvRow.replace(",", "").trim().equals("")) {
             writer.append(csvRow);
             writer.newLine();

@@ -54,8 +54,13 @@ public class Game {
     public List<Player> getAllPlayers() {
         List<Player> players = new ArrayList<Player>();
         for (String team : teams.keySet()) {
-            for (int number = 1; number <= teams.get(team).getPlayers ().size (); number ++) {
-                players.add(teams.get(team).getPlayers().get(String.valueOf(number)));
+            // TODO revisit this as it won't work with a team of three players
+            // numbered 6,8,9 for instance (unused at the moment though)
+            for (int number = 1; number <= teams.get(team).getPlayers().size(); number++) {
+                Player player = teams.get(team).getPlayers().get(String.valueOf(number));
+                if (player != null) {
+                    players.add(player);
+                }
             }
         }
         return players;

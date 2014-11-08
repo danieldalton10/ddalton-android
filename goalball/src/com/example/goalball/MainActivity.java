@@ -31,6 +31,8 @@ public class MainActivity extends Activity {
     private final static String GAME_STRING = "GAME";
     private final static String GOALBALL_DIR = "Goalball";
 
+    private final Gson gson = new Gson ();
+    
     private Game game = new Game();
     private Player lastThrower;
     private HashMap<String, List<String>> buttonToPlayer = new HashMap<String, List<String>>();
@@ -70,6 +72,16 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        try {
+            save("goalball_backup_" + System.currentTimeMillis() + ".csv");
+        } catch (IOException e) {
+            // can't do much about it
+        }
+        super.onDestroy();
+    }
+
     private void mapButtonsToPlayers() {
         buttonToPlayer.put(String.valueOf(btnHome1.getId()), playerDescription(HOME, "1"));
         buttonToPlayer.put(String.valueOf(btnHome2.getId()), playerDescription(HOME, "2"));
@@ -94,13 +106,6 @@ public class MainActivity extends Activity {
             if (resultCode == Activity.RESULT_OK && data.getExtras() != null) {
                 Log.d("GOALBALL", "Back from intent");
                 loadFromBundle(data.getExtras());
-                /*
-                 * String json = data.getExtras().getString("updatePlayer"); if
-                 * (json != null) { Gson gson = new Gson(); Player player =
-                 * gson.fromJson(json, Player.class);
-                 * game.getTeams().get(player.getTeam()).getPlayers()
-                 * .put(String.valueOf(player.getNumber()), player); }
-                 */
             }
         }
         }
@@ -108,7 +113,6 @@ public class MainActivity extends Activity {
 
     private void loadFromBundle(Bundle bundle) {
         String json = bundle.getString(GAME_STRING);
-        Gson gson = new Gson();
         game = gson.fromJson(json, Game.class);
         json = bundle.getString("lastThrower");
         if (json != null) {
@@ -118,7 +122,6 @@ public class MainActivity extends Activity {
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Gson gson = new Gson();
         savedInstanceState.putString(GAME_STRING, gson.toJson(game));
         savedInstanceState.putString("lastThrower", gson.toJson(lastThrower));
         super.onSaveInstanceState(savedInstanceState);
@@ -127,7 +130,6 @@ public class MainActivity extends Activity {
     public void onPlayer(View view) {
         Intent intent = new Intent(this, PlayerActivity.class);
         Bundle bundle = new Bundle();
-        Gson gson = new Gson();
         bundle.putString(GAME_STRING, gson.toJson(game));
         if (lastThrower != null) {
             bundle.putString("lastThrower", gson.toJson(lastThrower));
@@ -141,12 +143,15 @@ public class MainActivity extends Activity {
     }
 
     private File save() throws IOException {
+        return save("goalball" + System.currentTimeMillis() + ".csv");
+    }
+
+    private File save(String filename) throws IOException {
         CsvAssembler csvAssembler = new CsvAssembler();
         String header = "\"Team\",\"Number\",\"Saves\",\"Errors\",\"Throws\",\"Goals\",\"Throws Per Goal\",\"Score Time\",\"Goals VS Errors\"";
         List<Map<String, String>> contents = new ArrayList<Map<String, String>>();
         makeTeamCsv(contents, game.getTeams().get(HOME));
         makeTeamCsv(contents, game.getTeams().get(AWAY));
-        String filename = "goalball" + System.currentTimeMillis() + ".csv";
         File path = Environment.getExternalStoragePublicDirectory(GOALBALL_DIR);
         File file = new File(path, filename);
         path.mkdirs();

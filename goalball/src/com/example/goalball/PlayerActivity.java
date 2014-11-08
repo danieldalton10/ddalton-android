@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 
 public class PlayerActivity extends Activity {
     private final static String GAME_STRING = "GAME";
+    private final Gson gson = new Gson();
     private Player updatePlayer;
     private Player lastThrower = null;
     private Game game;
@@ -22,7 +23,6 @@ public class PlayerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-
         Intent intent = getIntent();
         bundle = getIntent().getExtras();
         String jsonPlayer = intent.getExtras().getString("updatePlayer");
@@ -34,8 +34,6 @@ public class PlayerActivity extends Activity {
             jsonLastThrower = savedInstanceState.getString("lastThrower");
             bundle = savedInstanceState.getBundle("bundle");
         }
-
-        Gson gson = new Gson();
         if (jsonPlayer != null) {
             updatePlayer = gson.fromJson(jsonPlayer, Player.class);
             Log.d("GOALBALL", "Loaded the player");
@@ -50,7 +48,6 @@ public class PlayerActivity extends Activity {
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        Gson gson = new Gson();
         savedInstanceState.putString("updatePlayer", gson.toJson(updatePlayer));
         if (lastThrower != null) {
             savedInstanceState.putString("lastThrower", gson.toJson(lastThrower));
@@ -78,10 +75,10 @@ public class PlayerActivity extends Activity {
 
     public void onGoal(View view) {
         String message = "An error occurred";
-        Log.d("GOALBALL", "is allowed to score: "+updatePlayer.isAllowToScore());
+        Log.d("GOALBALL", "is allowed to score: " + updatePlayer.isAllowToScore());
         if (!updatePlayer.isAllowToScore()) {
             updatePlayer.setAllowToScore(true);
-            Log.d("GOALBALL", "Setting is allowed to score: "+updatePlayer.isAllowToScore());
+            Log.d("GOALBALL", "Setting is allowed to score: " + updatePlayer.isAllowToScore());
             message = "Goal automatically added - tap back here again if you really meant to do this.";
         } else {
             if (updatePlayer != null) {
@@ -132,15 +129,11 @@ public class PlayerActivity extends Activity {
             game.getTeams().get(lastThrower.getTeam()).getPlayers().put(lastThrower.getNumber(), lastThrower);
         }
         game.getTeams().get(updatePlayer.getTeam()).getPlayers().put(updatePlayer.getNumber(), updatePlayer);
-        Intent intent = new Intent();   
-        Gson gson = new Gson();
-        // String json = gson.toJson(updatePlayer);
-        // bundle.putString("updatePlayer", json);
+        Intent intent = new Intent();
         bundle.putString(GAME_STRING, gson.toJson(game));
         if (lastThrower != null) {
             bundle.putString("lastThrower", gson.toJson(lastThrower));
         }
-        // Log.d("GOALBALL", "Json back to main = " + json);
         intent.putExtras(bundle);
         setResult(RESULT_OK, intent);
         finish();

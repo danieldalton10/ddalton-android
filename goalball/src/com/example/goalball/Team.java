@@ -8,7 +8,6 @@ public class Team {
     private String id;
     private String name;
     private HashMap<String, Player> players = new HashMap<String, Player>();
-    private int score;
     private int ownGoal;
     private Player totalPlayer;
 
@@ -32,14 +31,6 @@ public class Team {
 
     public void setPlayers(HashMap<String, Player> players) {
         this.players = players;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
     }
 
     public int getOwnGoal() {
@@ -66,6 +57,7 @@ public class Team {
         this.name = name;
     }
 
+    // TODO re visit this won't work if we have a team of 3 - players number 6,8,9 
     public List<Player> getPlayersAsList() {
         List<Player> playersList = new ArrayList<Player>();
         for (int number = 1; number <= players.size(); number++) {

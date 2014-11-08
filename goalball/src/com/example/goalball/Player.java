@@ -3,8 +3,6 @@ package com.example.goalball;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
-
 public class Player {
     private String name;
     private String team;
@@ -172,8 +170,6 @@ public class Player {
         if (seconds < 10) {
             secondsPrefix = "0";
         }
-        Log.d("GOALBALL", "Minutes = " + minutes);
-        Log.d("GOALBALL", "Seconds = " + seconds);
         return minutesPrefix + minutes + ":" + secondsPrefix + seconds;
     }
 
